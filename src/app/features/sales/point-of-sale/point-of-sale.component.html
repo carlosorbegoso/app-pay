@@ -1,87 +1,200 @@
-<div class="min-h-screen bg-gray-900">
-  <!-- Header -->
-  <header class="bg-gray-800 p-4 flex justify-between items-center">
-    <div class="flex items-center space-x-4">
-      <span class="text-white">Driver</span>
-      <span class="text-gray-400">0</span>
-    </div>
-    <div class="text-center">
-      <div class="text-white text-xl">21:01:48</div>
-      <div class="text-gray-400">Saturday 8 February 2025</div>
-    </div>
-    <div class="flex space-x-4">
-      <span class="text-red-500">Off</span>
-      <span class="text-white">On</span>
-      <span class="text-red-500">Off</span>
-    </div>
-  </header>
+<div class="fixed inset-0 bg-gray-900 select-none touch-manipulation overflow-hidden">
 
-  <!-- Main Content -->
-  <main class="p-4">
-    <!-- Adult Tickets -->
-    <div class="mb-8">
-      <h2 class="text-white text-xl font-bold mb-4">Adult Tickets</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        @for (ticket of adultTickets; track ticket.type) {
-          <button
-            (click)="processTicket(ticket.type, ticket.price)"
-            class="bg-blue-800 hover:bg-blue-700 p-6 rounded-lg text-white transition-colors"
-          >
-            <div class="flex justify-between items-center">
-              <span class="font-bold">{{ticket.label}}</span>
-              <span>S/. {{ticket.price.toFixed(2)}}</span>
-            </div>
-          </button>
-        }
+<!-- Header - Reducido en altura -->
+  <header class="bg-gray-800 px-6 py-2 flex justify-between items-center w-full shadow-lg h-[8vh]">
+    <div class="flex items-center gap-4">
+      <div class="flex flex-col">
+        <span class="text-white text-base font-semibold">Driver</span>
+        <span class="text-gray-400 text-xs">ID: 1234</span>
+      </div>
+      <div class="bg-gray-700 px-3 py-1 rounded-lg">
+        <span class="text-gray-300 text-sm">Bus: 0</span>
       </div>
     </div>
 
-    <!-- Student Tickets -->
-    <div>
-      <h2 class="text-white text-xl font-bold mb-4">Student Tickets</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        @for (ticket of studentTickets; track ticket.type) {
-          <button
-            (click)="processTicket(ticket.type, ticket.price)"
-            class="bg-yellow-600 hover:bg-yellow-500 p-6 rounded-lg text-white transition-colors"
-          >
-            <div class="flex justify-between items-center">
-              <span class="font-bold">{{ticket.label}}</span>
-              <span>S/. {{ticket.price.toFixed(2)}}</span>
-            </div>
-          </button>
-        }
+    <div class="text-center bg-gray-700 px-4 py-1 rounded-lg">
+      <div class="text-xl font-bold text-white">21:07:09</div>
+      <div class="text-xs text-gray-300">Saturday 8 February 2025</div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="flex gap-3">
+        <div class="flex flex-col items-center">
+          <span class="text-red-500 text-sm">GPS</span>
+          <span class="text-xs text-gray-400">Off</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <span class="text-green-500 text-sm">Network</span>
+          <span class="text-xs text-gray-400">On</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <span class="text-red-500 text-sm">Print</span>
+          <span class="text-xs text-gray-400">Off</span>
+        </div>
+      </div>
+      <button
+        (click)="toggleSidebar()"
+        class="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center text-white shadow-lg active:scale-95 transition-all"
+      >
+        <span class="text-xl">☰</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content - Altura fija sin scroll -->
+  <main class="h-[92vh] p-2 flex flex-col">
+    <!-- Quick Actions - Reducido en altura -->
+    <div class="grid grid-cols-3 gap-2 h-[15vh]">
+      <button class="bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center">
+        <span class="text-2xl">🎫</span>
+        <div class="text-sm font-bold">Last Ticket</div>
+        <div class="text-xs opacity-80">Print Copy</div>
+      </button>
+      <button class="bg-purple-600 hover:bg-purple-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center">
+        <span class="text-2xl">📊</span>
+        <div class="text-sm font-bold">Z Report</div>
+        <div class="text-xs opacity-80">Daily Summary</div>
+      </button>
+      <button class="bg-green-600 hover:bg-green-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center">
+        <span class="text-2xl">💰</span>
+        <div class="text-sm font-bold">Cash Count</div>
+        <div class="text-xs opacity-80">Register</div>
+      </button>
+    </div>
+
+    <!-- Tickets Container -->
+    <!-- Tickets Container -->
+    <div class="flex-1 grid grid-rows-2 gap-2 mt-2">
+      <!-- Adult Tickets -->
+      <div class="flex flex-col">
+        <h2 class="text-white text-lg font-bold px-2 mb-1">Adult Tickets</h2>
+        <div class="grid grid-cols-3 gap-2 flex-1">
+          @for (ticket of adultTickets; track ticket.type) {
+            <button
+              (touchstart)="processTicket($event, ticket.type, ticket.price)"
+              [disabled]="processingTicket"
+              class="ticket-button bg-gradient-to-br from-blue-700 to-blue-800
+                 hover:from-blue-600 hover:to-blue-700 rounded-lg text-white
+                 shadow-lg active:scale-95 transition-all flex flex-col
+                 items-center justify-center min-h-[150px]
+                 disabled:opacity-50 disabled:cursor-not-allowed
+                 relative overflow-hidden"
+            >
+              <div class="button-flash absolute inset-0 bg-white opacity-0 pointer-events-none"></div>
+              <div class="button-content">
+                @if (processingTicket) {
+                  <div class="animate-spin text-2xl">⌛</div>
+                } @else {
+                  <div class="text-lg font-bold">{{ticket.label}}</div>
+                  <div class="text-2xl font-bold">S/. {{ticket.price.toFixed(2)}}</div>
+                  <div class="text-xs opacity-80">Adult Ticket</div>
+                }
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Student Tickets -->
+      <div class="flex flex-col">
+        <h2 class="text-white text-lg font-bold px-2 mb-1">Student Tickets</h2>
+        <div class="grid grid-cols-3 gap-2 flex-1">
+          @for (ticket of studentTickets; track ticket.type) {
+            <button
+              (touchstart)="processTicket($event, ticket.type, ticket.price)"
+              [disabled]="processingTicket"
+              class="ticket-button bg-gradient-to-br from-yellow-600 to-yellow-700
+                 hover:from-yellow-500 hover:to-yellow-600 rounded-lg text-white
+                 shadow-lg active:scale-95 transition-all flex flex-col
+                 items-center justify-center min-h-[150px]
+                 disabled:opacity-50 disabled:cursor-not-allowed
+                 relative overflow-hidden"
+            >
+              <div class="button-flash absolute inset-0 bg-white opacity-0 pointer-events-none"></div>
+              <div class="button-content">
+                @if (processingTicket) {
+                  <div class="animate-spin text-2xl">⌛</div>
+                } @else {
+                  <div class="text-lg font-bold">{{ticket.label}}</div>
+                  <div class="text-2xl font-bold">S/. {{ticket.price.toFixed(2)}}</div>
+                  <div class="text-xs opacity-80">Student Ticket</div>
+                }
+              </div>
+            </button>
+          }
+        </div>
       </div>
     </div>
   </main>
 
   <!-- Right Sidebar -->
-  <aside class="fixed right-0 top-0 h-full w-16 bg-gray-800 flex flex-col items-center py-4 gap-4">
-    <button class="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center text-white">
-      📨
-    </button>
-    <button class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
-      📋
-    </button>
-    <div class="relative">
-      <button class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white">
-        👥
-      </button>
-      <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-        0
+  <aside
+    class="fixed right-0 top-0 h-full bg-gray-800 flex flex-col items-center py-6 gap-6 shadow-lg transition-all duration-300 ease-in-out transform"
+    [class.translate-x-0]="showSidebar"
+    [class.translate-x-full]="!showSidebar"
+  >
+    <div class="w-20 flex flex-col items-center gap-6">
+      <button class="w-14 h-14 bg-cyan-600 hover:bg-cyan-500 rounded-xl flex items-center justify-center text-white shadow-lg active:scale-95 transition-all">
+        <span class="text-2xl">📨</span>
+        <span class="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+        S/. {{totalAmount.toFixed(2)}}
       </span>
+      </button>
+      <button class="w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-xl flex items-center justify-center text-white shadow-lg active:scale-95 transition-all">
+        <span class="text-2xl">📋</span>
+      </button>
+      <div class="relative">
+        <button class="w-14 h-14 bg-gray-700 hover:bg-gray-600 rounded-xl flex items-center justify-center text-white shadow-lg active:scale-95 transition-all">
+          <span class="text-2xl">🎫</span>
+        </button>
+        <span class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold shadow-lg">
+        {{ticketsSold}}
+      </span>
+      </div>
+    </div>
+
+    <!-- Resumen de ventas -->
+    <div class="mt-auto mb-6 bg-gray-700 p-4 rounded-xl text-white text-center">
+      <div class="text-sm font-bold mb-2">Today's Sales</div>
+      <div class="text-lg">S/. {{totalAmount.toFixed(2)}}</div>
+      <div class="text-xs text-gray-300">Tickets: {{ticketsSold}}</div>
     </div>
   </aside>
 
-  <!-- Status Bar for Offline Mode -->
+  <!-- Overlay for sidebar -->
+  @if (showSidebar) {
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+      (click)="toggleSidebar()"
+    ></div>
+  }
+
+  <!-- Overlay for sidebar -->
+  @if (showSidebar) {
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+      (click)="toggleSidebar()"
+    ></div>
+  }
+
+  <!-- Offline Mode Indicator -->
   @if ((isOnline$ | async) === false) {
-    <div class="fixed top-4 right-20 bg-red-500 text-white px-4 py-2 rounded-lg">
-      Offline Mode
+    <div class="fixed top-24 left-1/2 transform -translate-x-1/2 bg-red-500 px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 z-50 animate-bounce">
+      <span>⚠️</span>
+      <span class="text-white font-bold">Offline Mode</span>
       @if ((pendingCount$ | async) ?? 0 > 0) {
-        <span class="ml-2">
-        Pending: {{ pendingCount$ | async }}
-      </span>
+        <div class="bg-red-600 px-3 py-1 rounded-lg">
+          <span class="text-white">{{ pendingCount$ | async }} pending</span>
+        </div>
       }
+    </div>
+  }
+
+  <!-- Success Toast -->
+  @if (showSuccess) {
+    <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-green-500 px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in z-50">
+      <span>✅</span>
+      <span class="text-white font-bold">Ticket Processed Successfully</span>
     </div>
   }
 </div>

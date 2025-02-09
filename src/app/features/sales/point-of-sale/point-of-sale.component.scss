@@ -1,5 +1,40 @@
 :host {
   display: block;
 }
+.button-pressed {
+  transform: scale(0.95);
+  opacity: 0.9;
+  transition: all 0.15s ease-in-out;
+}
 
-// Add any additional styles here
+@supports (-webkit-touch-callout: none) {
+  .ticket-button {
+    -webkit-tap-highlight-color: transparent;
+
+    &:active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+.button-flash {
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.button-content {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}

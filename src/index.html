@@ -4,13 +4,91 @@
   <meta charset="utf-8">
   <title>AppPay</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#1976d2">
+
+  <title>POS System</title>
 </head>
-<body>
-  <app-root></app-root>
-  <noscript>Please enable JavaScript to continue using this application.</noscript>
+<body class="touch-manipulation">
+<app-root></app-root>
+<noscript>Please enable JavaScript to continue using this application.</noscript>
+
+<!-- NoSleep.js para mantener la pantalla encendida -->
+<script src="https://unpkg.com/nosleep.js@0.12.0/dist/NoSleep.min.js"></script>
+
+<script>
+  // Prevenir teclas de cierre/recarga
+  document.addEventListener('keydown', function(e) {
+    if (
+      (e.key === 'F5') ||
+      (e.ctrlKey && e.key === 'r') ||
+      (e.altKey && e.key === 'F4')
+    ) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Prevenir menú contextual
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Prevenir cierre de ventana
+  window.addEventListener('beforeunload', function(e) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  });
+
+  // Mantener la pantalla encendida
+  document.addEventListener('DOMContentLoaded', function() {
+    const noSleep = new NoSleep();
+
+    // Intentar activar NoSleep inmediatamente
+    try {
+      noSleep.enable();
+      console.log('NoSleep activado');
+    } catch (err) {
+      console.error('Error al activar NoSleep:', err);
+    }
+
+    // Reactivar NoSleep cuando el documento vuelve a ser visible
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        noSleep.enable();
+      }
+    });
+
+    // Backup con WakeLock API
+    if ('wakeLock' in navigator) {
+      async function enableWakeLock() {
+        try {
+          const wakeLock = await navigator.wakeLock.request('screen');
+          console.log('WakeLock activado');
+
+          // Reactivar cuando el documento vuelve a ser visible
+          document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible') {
+              await enableWakeLock();
+            }
+          });
+        } catch (err) {
+          console.error('Error al activar WakeLock:', err);
+        }
+      }
+      enableWakeLock();
+    }
+  });
+</script>
 </body>
 </html>

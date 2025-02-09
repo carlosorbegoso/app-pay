@@ -9,7 +9,7 @@ import {environment} from '../../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
-export class SyncService {
+export class SyncService{
   private isOnline$ = new BehaviorSubject<boolean>(navigator.onLine);
   private isSyncing$ = new BehaviorSubject<boolean>(false);
   private pendingCount$ = new BehaviorSubject<number>(0);
