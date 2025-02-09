@@ -1,0 +1,87 @@
+<div class="min-h-screen bg-gray-900">
+  <!-- Header -->
+  <header class="bg-gray-800 p-4 flex justify-between items-center">
+    <div class="flex items-center space-x-4">
+      <span class="text-white">Driver</span>
+      <span class="text-gray-400">0</span>
+    </div>
+    <div class="text-center">
+      <div class="text-white text-xl">21:01:48</div>
+      <div class="text-gray-400">Saturday 8 February 2025</div>
+    </div>
+    <div class="flex space-x-4">
+      <span class="text-red-500">Off</span>
+      <span class="text-white">On</span>
+      <span class="text-red-500">Off</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="p-4">
+    <!-- Adult Tickets -->
+    <div class="mb-8">
+      <h2 class="text-white text-xl font-bold mb-4">Adult Tickets</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        @for (ticket of adultTickets; track ticket.type) {
+          <button
+            (click)="processTicket(ticket.type, ticket.price)"
+            class="bg-blue-800 hover:bg-blue-700 p-6 rounded-lg text-white transition-colors"
+          >
+            <div class="flex justify-between items-center">
+              <span class="font-bold">{{ticket.label}}</span>
+              <span>S/. {{ticket.price.toFixed(2)}}</span>
+            </div>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Student Tickets -->
+    <div>
+      <h2 class="text-white text-xl font-bold mb-4">Student Tickets</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        @for (ticket of studentTickets; track ticket.type) {
+          <button
+            (click)="processTicket(ticket.type, ticket.price)"
+            class="bg-yellow-600 hover:bg-yellow-500 p-6 rounded-lg text-white transition-colors"
+          >
+            <div class="flex justify-between items-center">
+              <span class="font-bold">{{ticket.label}}</span>
+              <span>S/. {{ticket.price.toFixed(2)}}</span>
+            </div>
+          </button>
+        }
+      </div>
+    </div>
+  </main>
+
+  <!-- Right Sidebar -->
+  <aside class="fixed right-0 top-0 h-full w-16 bg-gray-800 flex flex-col items-center py-4 gap-4">
+    <button class="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center text-white">
+      📨
+    </button>
+    <button class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+      📋
+    </button>
+    <div class="relative">
+      <button class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white">
+        👥
+      </button>
+      <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+        0
+      </span>
+    </div>
+  </aside>
+
+  <!-- Status Bar for Offline Mode -->
+  @if ((isOnline$ | async) === false) {
+    <div class="fixed top-4 right-20 bg-red-500 text-white px-4 py-2 rounded-lg">
+      Offline Mode
+      @if ((pendingCount$ | async) ?? 0 > 0) {
+        <span class="ml-2">
+        Pending: {{ pendingCount$ | async }}
+      </span>
+      }
+    </div>
+  }
+</div>
