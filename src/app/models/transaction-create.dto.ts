@@ -1,12 +1,7 @@
 import {TicketType} from './ticket-type';
 import {PaymentMethod} from './payment-method';
 
-export interface Transaction {
-  id?: number;
-  driver?: {
-    id: number;
-  };
-  ticketNumber?: string;
+export interface TransactionCreateDto {
   ticketType: TicketType;
   paymentMethod: PaymentMethod;
   amount: number;

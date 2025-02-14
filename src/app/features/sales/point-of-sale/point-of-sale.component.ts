@@ -8,6 +8,7 @@ import {Transaction} from '../../../models/transaction';
 import {FeedbackService} from '../../../core/services/feedback.service';
 import {Platform} from '@angular/cdk/platform';
 import {SyncService} from '../../../core/services/sync.service';
+import {AuthService} from '../../../core/services/auth.service';
 
 interface TicketOption {
   type: TicketType;
@@ -45,6 +46,7 @@ export class PointOfSaleComponent implements OnInit {
   ];
 
   constructor(
+    private authService: AuthService,
     private db: DatabaseService,
     private syncService: SyncService,
     private feedbackService: FeedbackService,
@@ -65,6 +67,12 @@ export class PointOfSaleComponent implements OnInit {
   async ngOnInit() {
     await this.db.initDatabase();
     await this.loadStoredData();
+    const driver = this.authService.getCurrentDriver();
+    if (driver) {
+      console.log('Logged in driver:', driver);
+    } else {
+      console.log('No driver logged in');
+    }
   }
   private async loadStoredData() {
     try {
@@ -100,6 +108,12 @@ export class PointOfSaleComponent implements OnInit {
   async processTicket(event: Event, type: TicketType, price: number) {
     if (this.processingTicket) return;
 
+    const driver = this.authService.getCurrentDriver();
+    if (!driver) {
+      console.error('No driver logged in');
+      return;
+    }
+
     await this.handleButtonPress(event, async () => {
       try {
         this.processingTicket = true;
@@ -110,7 +124,10 @@ export class PointOfSaleComponent implements OnInit {
           amount: price,
           timestamp: new Date(),
           synced: false,
-          paymentMethod: PaymentMethod.CASH
+          paymentMethod: PaymentMethod.CASH,
+          driver: {
+            id: driver.id
+          }
         };
 
         await this.syncService.saveOfflineTransaction(transaction);

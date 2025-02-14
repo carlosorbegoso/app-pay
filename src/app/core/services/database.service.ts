@@ -15,19 +15,18 @@ export class DatabaseService {
   private db!: IDBPDatabase;
 
   async initDatabase() {
-    this.db = await openDB('pos-db', 2, { // Incrementamos la versión para forzar la actualización
+    this.db = await openDB('pos-db', 3, {
       upgrade(db, oldVersion) {
-        // Si las stores no existen, las creamos
         if (!db.objectStoreNames.contains('pending-transactions')) {
-          db.createObjectStore('pending-transactions', {
+          const store = db.createObjectStore('pending-transactions', {
             keyPath: 'id',
             autoIncrement: true
           });
+          store.createIndex('driverId', 'driver.id');
         }
 
         if (!db.objectStoreNames.contains('daily-stats')) {
           const dailyStatsStore = db.createObjectStore('daily-stats');
-          // Inicializamos las estadísticas diarias
           const initialStats: DailyStats = {
             ticketsSold: 0,
             totalAmount: 0,
