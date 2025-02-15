@@ -62,68 +62,21 @@
       </button>
     </div>
 
-    <!-- Tickets Container -->
-    <!-- Tickets Container -->
-    <div class="flex-1 grid grid-rows-2 gap-2 mt-2">
-      <!-- Adult Tickets -->
-      <div class="flex flex-col">
-        <h2 class="text-white text-lg font-bold px-2 mb-1">Adult Tickets</h2>
-        <div class="grid grid-cols-3 gap-2 flex-1">
-          @for (ticket of adultTickets; track ticket.type) {
-            <button
-              (touchstart)="processTicket($event, ticket.type, ticket.price)"
-              [disabled]="processingTicket"
-              class="ticket-button bg-gradient-to-br from-blue-700 to-blue-800
-                 hover:from-blue-600 hover:to-blue-700 rounded-lg text-white
-                 shadow-lg active:scale-95 transition-all flex flex-col
-                 items-center justify-center min-h-[150px]
-                 disabled:opacity-50 disabled:cursor-not-allowed
-                 relative overflow-hidden"
-            >
-              <div class="button-flash absolute inset-0 bg-white opacity-0 pointer-events-none"></div>
-              <div class="button-content">
-                @if (processingTicket) {
-                  <div class="animate-spin text-2xl">⌛</div>
-                } @else {
-                  <div class="text-lg font-bold">{{ticket.label}}</div>
-                  <div class="text-2xl font-bold">S/. {{ticket.price.toFixed(2)}}</div>
-                  <div class="text-xs opacity-80">Adult Ticket</div>
-                }
-              </div>
-            </button>
-          }
-        </div>
-      </div>
-
-      <!-- Student Tickets -->
-      <div class="flex flex-col">
-        <h2 class="text-white text-lg font-bold px-2 mb-1">Student Tickets</h2>
-        <div class="grid grid-cols-3 gap-2 flex-1">
-          @for (ticket of studentTickets; track ticket.type) {
-            <button
-              (touchstart)="processTicket($event, ticket.type, ticket.price)"
-              [disabled]="isProcessing$ | async"
-              class="ticket-button bg-gradient-to-br from-blue-700 to-blue-800
-     hover:from-blue-600 hover:to-blue-700 rounded-lg text-white
-     shadow-lg active:scale-95 transition-all flex flex-col
-     items-center justify-center min-h-[150px]
-     disabled:opacity-50 disabled:cursor-not-allowed
-     relative overflow-hidden"
-            >
-              <div class="button-flash absolute inset-0 bg-white opacity-0 pointer-events-none"></div>
-              <div class="button-content">
-                @if (isProcessing$ | async) {
-                  <div class="animate-spin text-2xl">⌛</div>
-                } @else {
-                  <div class="text-lg font-bold">{{ticket.label}}</div>
-                  <div class="text-2xl font-bold">S/. {{ticket.price.toFixed(2)}}</div>
-                  <div class="text-xs opacity-80">Adult Ticket</div>
-                }
-              </div>
-            </button>
-          }
-        </div>
-      </div>
+    <div class="flex-1 grid grid-rows-2 gap-1 mt-2"> <!-- Changed flex-0 to flex-1 and reduced gap -->
+      <app-ticket-grid
+        title="Adult"
+        [tickets]="adultTickets"
+        [isProcessing$]="isProcessing$"
+        [buttonClass]="'ticket-button bg-gradient-to-br from-blue-700 to-blue-800 hover:from-blue-600 hover:to-blue-700 rounded-lg text-white shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center min-h-[120px] disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden'"
+        (onTicketSelected)="processTicket($event.event, $event.ticket.type, $event.ticket.price)"
+      />
+      <app-ticket-grid
+        title="Student"
+        [tickets]="studentTickets"
+        [isProcessing$]="isProcessing$"
+        [buttonClass]="'ticket-button bg-gradient-to-br from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 rounded-lg text-white shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center min-h-[120px] disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden'"
+        (onTicketSelected)="processTicket($event.event, $event.ticket.type, $event.ticket.price)"
+      />
     </div>
   </main>
 

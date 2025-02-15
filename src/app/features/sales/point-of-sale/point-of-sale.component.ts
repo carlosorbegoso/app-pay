@@ -9,6 +9,7 @@ import {FeedbackService} from '../../../core/services/feedback.service';
 import {Platform} from '@angular/cdk/platform';
 import {SyncService} from '../../../core/services/sync.service';
 import {AuthService} from '../../../core/services/auth.service';
+import {TicketGridComponent} from './ticket-grid/ticket-grid.component';
 
 interface TicketOption {
   type: TicketType;
@@ -22,7 +23,7 @@ interface SalesStats {
 @Component({
   selector: 'app-point-of-sale',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TicketGridComponent],
   templateUrl: './point-of-sale.component.html',
   styleUrl: './point-of-sale.component.scss'
 })
