@@ -20,10 +20,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Prevenir la selección de texto
     document.body.style.userSelect = 'none';
-
-    // Prevenir el zoom en dispositivos móviles
     document.body.style.touchAction = 'manipulation';
   }
 }

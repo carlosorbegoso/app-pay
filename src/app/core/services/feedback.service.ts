@@ -18,7 +18,6 @@ export class FeedbackService {
       navigator.vibrate(50);
     }
   }
-
   private playSound(intensity: 'light' | 'medium' | 'heavy') {
     const sounds = {
       light: 'assets/sounds/tap-light.mp3',
