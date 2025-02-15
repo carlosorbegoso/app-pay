@@ -1,25 +1,32 @@
-import {Component, OnInit, Renderer2} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {DatabaseService} from '../../../core/services/database.service';
-import {TicketType} from '../../../models/ticket-type';
-import {PaymentMethod} from '../../../models/payment-method';
-import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-import {Transaction} from '../../../models/transaction';
-import {FeedbackService} from '../../../core/services/feedback.service';
-import {Platform} from '@angular/cdk/platform';
-import {SyncService} from '../../../core/services/sync.service';
-import {AuthService} from '../../../core/services/auth.service';
-import {TicketGridComponent} from './ticket-grid/ticket-grid.component';
+import { Component, OnInit, Renderer2 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DatabaseService } from '../../../core/services/database.service';
+import { TicketType } from '../../../models/ticket-type';
+import { PaymentMethod } from '../../../models/payment-method';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { Transaction } from '../../../models/transaction';
+import { FeedbackService } from '../../../core/services/feedback.service';
+import { Platform } from '@angular/cdk/platform';
+import { SyncService } from '../../../core/services/sync.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { TicketGridComponent } from './ticket-grid/ticket-grid.component';
 
 interface TicketOption {
   type: TicketType;
   price: number;
   label: string;
 }
+
 interface SalesStats {
   ticketsSold: number;
   totalAmount: number;
 }
+
+interface SystemStatus {
+  isOnline: boolean;
+  pendingCount: number;
+}
+
 @Component({
   selector: 'app-point-of-sale',
   standalone: true,
@@ -30,30 +37,19 @@ interface SalesStats {
 export class PointOfSaleComponent implements OnInit {
   private static readonly BUTTON_ANIMATION_DURATION = 150;
   private static readonly SUCCESS_MESSAGE_DURATION = 2000;
+
   private salesStatsSubject = new BehaviorSubject<SalesStats>({ ticketsSold: 0, totalAmount: 0 });
-  readonly salesStats$ = this.salesStatsSubject.asObservable();
+  salesStats$ = this.salesStatsSubject.asObservable();
   isOnline$!: Observable<boolean>;
   pendingCount$!: Observable<number>;
   private showSuccessSubject = new BehaviorSubject<boolean>(false);
-  readonly showSuccess$ = this.showSuccessSubject.asObservable();
+  showSuccess$ = this.showSuccessSubject.asObservable();
   private showSidebarSubject = new BehaviorSubject<boolean>(false);
-  readonly showSidebar$ = this.showSidebarSubject.asObservable();
-
-  readonly isProcessing$ = new BehaviorSubject<boolean>(false);
-  processingTicket = false;
+  showSidebar$ = this.showSidebarSubject.asObservable();
+  isProcessing$ = new BehaviorSubject<boolean>(false);
   isIOS: boolean;
 
-
-  readonly systemStatus$ = combineLatest([
-    this.isOnline$,
-    this.pendingCount$
-  ]).pipe(
-    map(([isOnline, pendingCount]) => ({
-      isOnline,
-      pendingCount,
-      needsSync: !isOnline && pendingCount > 0
-    }))
-  );
+  systemStatus$ = new BehaviorSubject<SystemStatus>({ isOnline: true, pendingCount: 0 });
 
   readonly adultTickets: TicketOption[] = [
     { type: TicketType.ADULT_DIRECT, price: 2.00, label: 'DIRECT' },
@@ -68,12 +64,12 @@ export class PointOfSaleComponent implements OnInit {
   ];
 
   constructor(
-    private readonly authService: AuthService,
-    private readonly db: DatabaseService,
-    private readonly syncService: SyncService,
-    private readonly feedbackService: FeedbackService,
-    private readonly renderer: Renderer2,
-    private readonly platform: Platform
+    private authService: AuthService,
+    private db: DatabaseService,
+    private syncService: SyncService,
+    private feedbackService: FeedbackService,
+    private renderer: Renderer2,
+    private platform: Platform
   ) {
     this.initializeObservables();
     this.isIOS = this.platform.IOS;
@@ -104,19 +100,15 @@ export class PointOfSaleComponent implements OnInit {
       console.error('Error loading stored data:', error);
     }
   }
+
   private checkDriverStatus(): void {
     const driver = this.authService.getCurrentDriver();
-    if (driver) {
-      console.log('Logged in driver:', driver);
-    } else {
-      console.log('No driver logged in');
-    }
+    console.log(driver ? 'Logged in driver:' : 'No driver logged in', driver);
   }
 
   toggleSidebar(): void {
     this.showSidebarSubject.next(!this.showSidebarSubject.value);
   }
-
 
   async handleButtonPress(event: Event, callback: () => Promise<void>): Promise<void> {
     const button = event.currentTarget as HTMLElement;
@@ -160,6 +152,7 @@ export class PointOfSaleComponent implements OnInit {
       this.isProcessing$.next(false);
     }
   }
+
   private async executeTransaction(transaction: Transaction): Promise<void> {
     const currentStats = this.salesStatsSubject.value;
     this.salesStatsSubject.next({
@@ -183,11 +176,10 @@ export class PointOfSaleComponent implements OnInit {
       timestamp: new Date(),
       synced: false,
       paymentMethod: PaymentMethod.CASH,
-      driver: {
-        id: driver.id
-      }
+      driver: { id: driver.id }
     };
   }
+
   private async syncIfOnline(): Promise<void> {
     if (!navigator.onLine) return;
 

@@ -1,6 +1,5 @@
 <div class="fixed inset-0 bg-gray-900 select-none touch-manipulation overflow-hidden">
-
-<!-- Header - Reducido en altura -->
+  <!-- Header -->
   <header class="bg-gray-800 px-6 py-2 flex justify-between items-center w-full shadow-lg h-[8vh]">
     <div class="flex items-center gap-4">
       <div class="flex flex-col">
@@ -34,35 +33,26 @@
       </div>
       <button
         (click)="toggleSidebar()"
-        class="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center text-white shadow-lg active:scale-95 transition-all"
+        class="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center text-white shadow-lg active:scale-95 transition-all z-50"
       >
         <span class="text-xl">☰</span>
       </button>
     </div>
   </header>
 
-  <!-- Main Content - Altura fija sin scroll -->
+  <!-- Main Content -->
   <main class="h-[92vh] p-2 flex flex-col">
-    <!-- Quick Actions - Reducido en altura -->
     <div class="grid grid-cols-3 gap-2 h-[15vh]">
-      <button class="bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center">
-        <span class="text-2xl">🎫</span>
-        <div class="text-sm font-bold">Last Ticket</div>
-        <div class="text-xs opacity-80">Print Copy</div>
-      </button>
-      <button class="bg-purple-600 hover:bg-purple-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center">
-        <span class="text-2xl">📊</span>
-        <div class="text-sm font-bold">Z Report</div>
-        <div class="text-xs opacity-80">Daily Summary</div>
-      </button>
-      <button class="bg-green-600 hover:bg-green-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center">
-        <span class="text-2xl">💰</span>
-        <div class="text-sm font-bold">Cash Count</div>
-        <div class="text-xs opacity-80">Register</div>
-      </button>
+      @for (action of ['Last Ticket', 'Z Report', 'Cash Count']; track $index) {
+        <button class="{{$index === 0 ? 'bg-blue-600 hover:bg-blue-500' : $index === 1 ? 'bg-purple-600 hover:bg-purple-500' : 'bg-green-600 hover:bg-green-500'}} text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center">
+          <span class="text-2xl">{{$index === 0 ? '🎫' : $index === 1 ? '📊' : '💰'}}</span>
+          <div class="text-sm font-bold">{{action}}</div>
+          <div class="text-xs opacity-80">{{$index === 0 ? 'Print Copy' : $index === 1 ? 'Daily Summary' : 'Register'}}</div>
+        </button>
+      }
     </div>
 
-    <div class="flex-1 grid grid-rows-2 gap-1 mt-2"> <!-- Changed flex-0 to flex-1 and reduced gap -->
+    <div class="flex-1 grid grid-rows-2 gap-1 mt-2">
       <app-ticket-grid
         title="Adult"
         [tickets]="adultTickets"
@@ -80,49 +70,60 @@
     </div>
   </main>
 
-  <!-- Right Sidebar -->
   <aside
-    class="fixed right-0 top-0 h-full bg-gray-800 flex flex-col items-center py-6 gap-6 shadow-lg transition-all duration-300 ease-in-out transform"
+    class="fixed right-0 top-0 h-full w-24 bg-gray-800 flex flex-col shadow-lg transition-all duration-300 ease-in-out transform z-45"
     [class.translate-x-0]="showSidebar$ | async"
     [class.translate-x-full]="!(showSidebar$ | async)"
   >
-    <div class="w-20 flex flex-col items-center gap-6">
-      @if (salesStats$ | async; as stats) {
-        <button class="w-14 h-14 bg-cyan-600 hover:bg-cyan-500 rounded-xl flex items-center justify-center text-white shadow-lg active:scale-95 transition-all">
+    @if (salesStats$ | async; as stats) {
+      <!-- Empty space at top -->
+      <div class="h-[8vh]"></div>
+
+      <!-- Actions Section with buttons -->
+      <div class="flex-1 flex flex-col items-center pt-8 gap-8">
+        <!-- Status Actions -->
+        <button class="sidebar-button bg-cyan-600 hover:bg-cyan-500 relative">
           <span class="text-2xl">📨</span>
-          <span class="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-          S/. {{stats.totalAmount.toFixed(2)}}
-        </span>
         </button>
-        <!-- ... otros botones ... -->
-        <div class="relative">
-          <button class="w-14 h-14 bg-gray-700 hover:bg-gray-600 rounded-xl flex items-center justify-center text-white shadow-lg active:scale-95 transition-all">
-            <span class="text-2xl">🎫</span>
-          </button>
-          <span class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold shadow-lg">
+
+        <button class="sidebar-button bg-gray-700 hover:bg-gray-600 relative">
+          <span class="text-2xl">🎫</span>
+          <span class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold">
           {{stats.ticketsSold}}
         </span>
-        </div>
+        </button>
 
-        <!-- Resumen de ventas -->
-        <div class="mt-auto mb-6 bg-gray-700 p-4 rounded-xl text-white text-center">
-          <div class="text-sm font-bold mb-2">Today's Sales</div>
-          <div class="text-lg">S/. {{stats.totalAmount.toFixed(2)}}</div>
-          <div class="text-xs text-gray-300">Tickets: {{stats.ticketsSold}}</div>
+        <!-- More Actions -->
+        <button class="sidebar-button bg-purple-600 hover:bg-purple-500">
+          <span class="text-2xl">📊</span>
+        </button>
+
+        <button class="sidebar-button bg-amber-600 hover:bg-amber-500">
+          <span class="text-2xl">⚙️</span>
+        </button>
+      </div>
+
+
+      <!-- Bottom Stats Section -->
+      <div class="p-4 border-t border-gray-700">
+        <div class="bg-gray-700 p-3 rounded-xl text-white text-center">
+          <div class="text-sm font-semibold mb-1">Today's Sales</div>
+          <div class="text-lg font-bold">S/. {{stats.totalAmount.toFixed(2)}}</div>
+          <div class="text-xs text-gray-300 mt-1">Tickets: {{stats.ticketsSold}}</div>
         </div>
-      }
-    </div>
+      </div>
+    }
   </aside>
 
-  <!-- Overlay for sidebar -->
-  @if (showSuccess$ | async) {
-    <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-green-500 px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in z-50">
-      <span>✅</span>
-      <span class="text-white font-bold">Ticket Processed Successfully</span>
-    </div>
+  @if (showSidebar$ | async) {
+    <!-- Backdrop -->
+    <div
+      (click)="toggleSidebar()"
+      class="fixed inset-0 bg-black/50 transition-opacity z-40"
+    ></div>
   }
 
-  <!-- Offline Mode Indicator -->
+  <!-- Status Messages -->
   @if (systemStatus$ | async; as status) {
     @if (!status.isOnline) {
       <div class="fixed top-24 left-1/2 transform -translate-x-1/2 bg-red-500 px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 z-50 animate-bounce">
@@ -137,7 +138,6 @@
     }
   }
 
-  <!-- Success Toast -->
   @if (showSuccess$ | async) {
     <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-green-500 px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-fade-in z-50">
       <span>✅</span>
