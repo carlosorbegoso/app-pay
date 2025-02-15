@@ -1,5 +1,5 @@
 import { Component, OnInit, Renderer2 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {AsyncPipe, CommonModule} from '@angular/common';
 import { DatabaseService } from '../../../core/services/database.service';
 import { TicketType } from '../../../models/ticket-type';
 import { PaymentMethod } from '../../../models/payment-method';
@@ -10,6 +10,8 @@ import { Platform } from '@angular/cdk/platform';
 import { SyncService } from '../../../core/services/sync.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TicketGridComponent } from './ticket-grid/ticket-grid.component';
+import {PosHeaderComponent} from './pos-header/pos-header.component';
+import {SidebarActionsComponent} from './sidebar/sidebar.component';
 
 interface TicketOption {
   type: TicketType;
@@ -30,7 +32,7 @@ interface SystemStatus {
 @Component({
   selector: 'app-point-of-sale',
   standalone: true,
-  imports: [CommonModule, TicketGridComponent],
+  imports: [TicketGridComponent, PosHeaderComponent, SidebarActionsComponent, AsyncPipe],
   templateUrl: './point-of-sale.component.html',
   styleUrl: './point-of-sale.component.scss'
 })
@@ -74,7 +76,22 @@ export class PointOfSaleComponent implements OnInit {
     this.initializeObservables();
     this.isIOS = this.platform.IOS;
   }
-
+  handleSidebarAction(action: string) {
+    switch(action) {
+      case 'messages':
+        // Handle messages action
+        break;
+      case 'tickets':
+        // Handle tickets action
+        break;
+      case 'stats':
+        // Handle stats action
+        break;
+      case 'settings':
+        // Handle settings action
+        break;
+    }
+  }
   private initializeObservables(): void {
     this.isOnline$ = this.syncService.getOnlineStatus();
     this.pendingCount$ = this.syncService.getPendingCount();

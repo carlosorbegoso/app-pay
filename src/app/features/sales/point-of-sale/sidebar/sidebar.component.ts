@@ -1,13 +1,18 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+// src/app/features/sales/point-of-sale/sidebar-actions/sidebar-actions.component.ts
+import {Component, Input} from '@angular/core';
+
+export interface SalesStats {
+  ticketsSold: number;
+  totalAmount: number;
+}
 
 @Component({
-  selector: 'app-sidebar',
-  templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.scss']
+  selector: 'app-sidebar-actions',
+  templateUrl: './sidebar-actions.component.html',
+  styleUrls: ['./sidebar-actions.component.scss']
 })
-export class SidebarComponent {
+export class SidebarActionsComponent {
   @Input() show = false;
-  @Input() ticketsSold = 0;
-  @Input() totalAmount = 0;
-  @Output() onClose = new EventEmitter<void>();
+  @Input() stats!: SalesStats;
+  @Input() onActionClick?: (action: string) => void;
 }

@@ -1,39 +1,95 @@
-<header class="bg-gray-800 px-6 py-2 flex justify-between items-center w-full shadow-lg h-[8vh]">
-  <div class="flex items-center gap-4">
-    <div class="flex flex-col">
-      <span class="text-white text-base font-semibold">Driver</span>
-      <span class="text-gray-400 text-xs">ID: 1234</span>
-    </div>
-    <div class="bg-gray-700 px-3 py-1 rounded-lg">
-      <span class="text-gray-300 text-sm">Bus: 0</span>
+<header
+  class="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-3 flex justify-between items-center w-full shadow-2xl h-[8vh] relative z-50"
+  xmlns="http://www.w3.org/1999/html">
+  <!-- Left Section: Driver & Bus Info -->
+  <div class="flex items-center space-x-6">
+    @if (currentDriver; as driver) {
+      <div class="flex items-center space-x-3 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl ring-1 ring-white/10 transition-all duration-200">
+        <div class="h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center text-white font-semibold shadow-lg shadow-primary-500/20">
+          {{driver.firstName[0]}}{{driver.lastName[0]}}
+        </div>
+        <div class="flex flex-col">
+          <span class="text-slate-100 text-base font-medium tracking-wide">{{driver.firstName}} {{driver.lastName}}</span>
+          <span class="text-primary-400 text-xs font-medium">ID: {{driver.driverCode}}</span>
+        </div>
+      </div>
+    } @else {
+      <div class="flex items-center space-x-3 bg-red-950/20 hover:bg-red-950/30 px-4 py-2 rounded-xl ring-1 ring-red-500/20 transition-all duration-200">
+        <div class="h-10 w-10 bg-red-500/10 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/10">
+          <span class="text-xl">⚠️</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-red-400 text-base font-medium">No Driver</span>
+          <span class="text-red-300/70 text-xs">Please login</span>
+        </div>
+      </div>
+    }
+
+    @if (busConfig; as bus) {
+      <div class="flex items-center space-x-3 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl ring-1 ring-white/10 transition-all duration-200">
+        <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+        </svg>
+        <div class="flex flex-col">
+          <span class="text-slate-300 text-sm font-medium">Bus #{{bus.id}}</span>
+          <span class="text-primary-400 text-xs">Route {{bus.routeId}}</span>
+        </div>
+      </div>
+    } @else {
+      <div class="flex items-center space-x-3 bg-red-950/20 hover:bg-red-950/30 px-4 py-2 rounded-xl ring-1 ring-red-500/20 transition-all duration-200">
+        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+        </svg>
+        <span class="text-red-400 text-sm">No Bus Config</span>
+      </div>
+    }
+  </div>
+
+  <!-- Center Section: Time & Date -->
+  <div class="absolute left-1/2 -translate-x-1/2">
+    <div class="bg-white/5 hover:bg-white/10 px-6 py-2 rounded-xl ring-1 ring-white/10 transition-all duration-200">
+      <div class="text-2xl font-bold text-slate-100 tracking-wider">{{formatTime(currentDateTime)}}</div>
+      <div class="text-xs text-slate-400 font-medium">{{formatDate(currentDateTime)}}</div>
     </div>
   </div>
 
-  <div class="text-center bg-gray-700 px-4 py-1 rounded-lg">
-    <div class="text-xl font-bold text-white">21:07:09</div>
-    <div class="text-xs text-gray-300">Saturday 8 February 2025</div>
-  </div>
-
-  <div class="flex items-center gap-4">
-    <div class="flex gap-3">
+  <!-- Right Section: System Status & Menu -->
+  <div class="flex items-center space-x-6">
+    <div class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl ring-1 ring-white/10 transition-all duration-200 flex space-x-4">
       <div class="flex flex-col items-center">
-        <span class="text-red-500 text-sm">GPS</span>
-        <span class="text-xs text-gray-400">Off</span>
+        <svg [class]="systemStatus.gps ? 'text-emerald-400' : 'text-red-400'" class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span class="text-xs" [class]="systemStatus.gps ? 'text-emerald-400' : 'text-red-400'">
+          {{systemStatus.gps ? 'GPS On' : 'GPS Off'}}
+        </span>
       </div>
       <div class="flex flex-col items-center">
-        <span class="text-green-500 text-sm">Network</span>
-        <span class="text-xs text-gray-400">On</span>
+        <svg [class]="systemStatus.network ? 'text-emerald-400' : 'text-red-400'" class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+        </svg>
+        <span class="text-xs" [class]="systemStatus.network ? 'text-emerald-400' : 'text-red-400'">
+          {{systemStatus.network ? 'Online' : 'Offline'}}
+        </span>
       </div>
       <div class="flex flex-col items-center">
-        <span class="text-red-500 text-sm">Print</span>
-        <span class="text-xs text-gray-400">Off</span>
+        <svg [class]="systemStatus.print ? 'text-emerald-400' : 'text-red-400'" class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+        </svg>
+        <span class="text-xs" [class]="systemStatus.print ? 'text-emerald-400' : 'text-red-400'">
+          {{systemStatus.print ? 'Printer On' : 'Printer Off'}}
+        </span>
       </div>
     </div>
+
     <button
       (click)="onToggleSidebar.emit()"
-      class="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center text-white shadow-lg active:scale-95 transition-all"
+      class="w-11 h-11 bg-primary-600 hover:bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20 active:scale-95 transition-all duration-200"
     >
-      <span class="text-xl">☰</span>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
     </button>
   </div>
 </header>

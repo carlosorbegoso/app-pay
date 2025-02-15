@@ -1,0 +1,8 @@
+// src/app/features/sales/point-of-sale/sidebar-actions/sidebar-actions.component.scss
+:host {
+  display: block;
+}
+
+.sidebar-button {
+  @apply w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg active:scale-95 transition-all relative;
+}
