@@ -28,6 +28,11 @@
             "assets": [
               {
                 "glob": "**/*",
+                "input": "src/assets",
+                "output": "/assets"
+              },
+              {
+                "glob": "**/*",
                 "input": "public"
               }
             ],
@@ -87,11 +92,10 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
               {
                 "glob": "**/*",
-                "input": "src/assets/sounds/",
-                "output": "/assets/sounds/"
+                "input": "src/assets",
+                "output": "/assets"
               }
             ],
             "styles": [

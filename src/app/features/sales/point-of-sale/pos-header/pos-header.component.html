@@ -1,0 +1,39 @@
+<header class="bg-gray-800 px-6 py-2 flex justify-between items-center w-full shadow-lg h-[8vh]">
+  <div class="flex items-center gap-4">
+    <div class="flex flex-col">
+      <span class="text-white text-base font-semibold">Driver</span>
+      <span class="text-gray-400 text-xs">ID: 1234</span>
+    </div>
+    <div class="bg-gray-700 px-3 py-1 rounded-lg">
+      <span class="text-gray-300 text-sm">Bus: 0</span>
+    </div>
+  </div>
+
+  <div class="text-center bg-gray-700 px-4 py-1 rounded-lg">
+    <div class="text-xl font-bold text-white">21:07:09</div>
+    <div class="text-xs text-gray-300">Saturday 8 February 2025</div>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <div class="flex gap-3">
+      <div class="flex flex-col items-center">
+        <span class="text-red-500 text-sm">GPS</span>
+        <span class="text-xs text-gray-400">Off</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <span class="text-green-500 text-sm">Network</span>
+        <span class="text-xs text-gray-400">On</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <span class="text-red-500 text-sm">Print</span>
+        <span class="text-xs text-gray-400">Off</span>
+      </div>
+    </div>
+    <button
+      (click)="onToggleSidebar.emit()"
+      class="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center text-white shadow-lg active:scale-95 transition-all"
+    >
+      <span class="text-xl">☰</span>
+    </button>
+  </div>
+</header>

@@ -114,40 +114,39 @@ export class PointOfSaleComponent implements OnInit {
       return;
     }
 
+
     await this.handleButtonPress(event, async () => {
-      try {
-        this.processingTicket = true;
-        await this.feedbackService.provideFeedback('medium');
-
-        const transaction: Transaction = {
-          ticketType: type,
-          amount: price,
-          timestamp: new Date(),
-          synced: false,
-          paymentMethod: PaymentMethod.CASH,
-          driver: {
-            id: driver.id
-          }
-        };
-
-        await this.syncService.saveOfflineTransaction(transaction);
-
-        this.ticketsSold++;
-        this.totalAmount += price;
-
-        if (navigator.onLine) {
-          await this.syncService.syncPendingTransactions();
+      const transaction: Transaction = {
+        ticketType: type,
+        amount: price,
+        timestamp: new Date(),
+        synced: false,
+        paymentMethod: PaymentMethod.CASH,
+        driver: {
+          id: driver.id
         }
+      };
 
-        await this.feedbackService.provideFeedback('light');
-        this.showSuccess = true;
-        setTimeout(() => this.showSuccess = false, 2000);
-      } catch (error) {
-        console.error('Error processing ticket:', error);
-        await this.feedbackService.provideFeedback('heavy');
-      } finally {
-        this.processingTicket = false;
-      }
+      this.ticketsSold++;
+      this.totalAmount += price;
+      this.showSuccess = true;
+
+      Promise.all([
+        this.syncService.saveOfflineTransaction(transaction).catch(error => {
+          console.error('Error saving transaction:', error);
+        }),
+
+        navigator.onLine ?
+          this.syncService.syncPendingTransactions().catch(error => {
+            console.error('Error syncing:', error);
+          }) :
+          Promise.resolve(),
+
+        new Promise(resolve => setTimeout(() => {
+          this.showSuccess = false;
+          resolve(true);
+        }, 2000))
+      ]);
     });
   }
 

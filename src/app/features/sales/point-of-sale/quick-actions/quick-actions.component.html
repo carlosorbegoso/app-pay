@@ -1,0 +1,26 @@
+<div class="grid grid-cols-3 gap-2 h-[15vh]">
+  <button
+    (click)="onActionClick($event, 'lastTicket')"
+    class="bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center"
+  >
+    <span class="text-2xl">🎫</span>
+    <div class="text-sm font-bold">Last Ticket</div>
+    <div class="text-xs opacity-80">Print Copy</div>
+  </button>
+  <button
+    (click)="onActionClick($event, 'zReport')"
+    class="bg-purple-600 hover:bg-purple-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center"
+  >
+    <span class="text-2xl">📊</span>
+    <div class="text-sm font-bold">Z Report</div>
+    <div class="text-xs opacity-80">Daily Summary</div>
+  </button>
+  <button
+    (click)="onActionClick($event, 'cashCount')"
+    class="bg-green-600 hover:bg-green-500 text-white rounded-lg shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center"
+  >
+    <span class="text-2xl">💰</span>
+    <div class="text-sm font-bold">Cash Count</div>
+    <div class="text-xs opacity-80">Register</div>
+  </button>
+</div>

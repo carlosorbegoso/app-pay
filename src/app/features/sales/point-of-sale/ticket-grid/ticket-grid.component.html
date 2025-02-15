@@ -1,0 +1,29 @@
+<div class="flex flex-col">
+  <h2 class="text-white text-lg font-bold px-2 mb-1">{{title}}</h2>
+  <div class="grid grid-cols-3 gap-2 flex-1">
+    @for (ticket of tickets; track ticket.type) {
+      <button
+        (touchstart)="onTicketSelected.emit({event: $event, type: ticket.type, price: ticket.price})"
+        [disabled]="processing"
+        [ngClass]="[
+              'ticket-button bg-gradient-to-br',
+              isAdult ?
+                'from-blue-700 to-blue-800 hover:from-blue-600 hover:to-blue-700' :
+                'from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600',
+              'rounded-lg text-white shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center min-h-[150px] disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden'
+            ]"
+      >
+        <div class="button-flash absolute inset-0 bg-white opacity-0 pointer-events-none"></div>
+        <div class="button-content">
+          @if (processing) {
+            <div class="animate-spin text-2xl">⌛</div>
+          } @else {
+            <div class="text-lg font-bold">{{ticket.label}}</div>
+            <div class="text-2xl font-bold">S/. {{ticket.price.toFixed(2)}}</div>
+            <div class="text-xs opacity-80">{{ticketType}} Ticket</div>
+          }
+        </div>
+      </button>
+    }
+  </div>
+</div>
