@@ -1,114 +1,131 @@
-import { Injectable } from '@angular/core';
-import { Platform } from '@angular/cdk/platform';
+import {Injectable} from '@angular/core';
+import {Platform} from '@angular/cdk/platform';
+
+type SoundIntensity = 'light' | 'medium' | 'heavy';
+
+interface AudioResources {
+  context: AudioContext;
+  buffers: Map<SoundIntensity, AudioBuffer>;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class FeedbackService {
-  private audioContext: AudioContext | null = null;
-  private sounds: { [key: string]: AudioBuffer } = {};
-  private initialized = false;
-  private hasUserInteraction = false;
+  private static readonly DEFAULT_VIBRATION_DURATION = 50;
+  private static readonly DEFAULT_GAIN_VALUE = 1.0;
+
+  private audioResources: AudioResources | null = null;
+  private isAudioInitialized = false;
+  private hasUserInteracted = false;
 
   constructor(private platform: Platform) {
-    // Detectar interacción del usuario
-    document.addEventListener('touchstart', () => this.handleUserInteraction(), { once: true });
-    document.addEventListener('mousedown', () => this.handleUserInteraction(), { once: true });
+    this.setupUserInteractionListeners();
   }
 
-  private handleUserInteraction() {
-    console.log('User interaction detected');
-    this.hasUserInteraction = true;
-    if (this.audioContext?.state === 'suspended') {
-      this.audioContext.resume();
-    }
-  }
-
-  private async initAudioContext() {
-    if (!this.audioContext) {
-      this.audioContext = new AudioContext();
-      try {
-        const intensities = ['light', 'medium', 'heavy'];
-        for (const intensity of intensities) {
-          try {
-            const url = `/assets/sounds/tap-${intensity}.mp3`;
-            console.log('Loading sound:', url);
-
-            const response = await fetch(url);
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const arrayBuffer = await response.arrayBuffer();
-            console.log(`Sound ${intensity} loaded, decoding...`);
-
-            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-            this.sounds[intensity] = audioBuffer;
-            console.log(`Sound ${intensity} decoded and loaded successfully`);
-          } catch (error) {
-            console.error(`Error loading sound ${intensity}:`, error);
-          }
-        }
-        this.initialized = true;
-      } catch (error) {
-        console.error('Error initializing audio context:', error);
-        this.initialized = false;
-      }
-    }
-  }
-
-  async provideFeedback(intensity: 'light' | 'medium' | 'heavy' = 'medium') {
-    if (!this.hasUserInteraction) {
-      console.log('Waiting for user interaction...');
+  async provideFeedback(intensity: SoundIntensity = 'medium'): Promise<void> {
+    if (!this.hasUserInteracted) {
       return;
     }
 
-    if (!this.initialized) {
-      try {
-        await this.initAudioContext();
-      } catch (error) {
-        console.error('Error initializing audio:', error);
-        this.fallbackToVibration();
-        return;
-      }
+    if (!this.isAudioInitialized) {
+      await this.initializeAudio();
     }
 
-    try {
-      if (this.audioContext && this.sounds[intensity]) {
-        console.log('Playing sound:', intensity);
+    await this.playSound(intensity);
+  }
 
-        // Asegurarse de que el contexto esté activo
-        if (this.audioContext.state === 'suspended') {
-          console.log('Resuming audio context');
-          await this.audioContext.resume();
-        }
+  private setupUserInteractionListeners(): void {
+    const handleInteraction = () => this.onFirstUserInteraction();
+    document.addEventListener('touchstart', handleInteraction, { once: true });
+    document.addEventListener('mousedown', handleInteraction, { once: true });
+  }
 
-        const source = this.audioContext.createBufferSource();
-        source.buffer = this.sounds[intensity];
-        source.connect(this.audioContext.destination);
+  private async onFirstUserInteraction(): Promise<void> {
+    this.hasUserInteracted = true;
+    await this.resumeAudioIfNeeded();
+  }
 
-        // Configurar el volumen
-        const gainNode = this.audioContext.createGain();
-        gainNode.gain.value = 1.0; // Volumen máximo
-        source.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-
-        source.start(0);
-        console.log('Sound started successfully');
-      } else {
-        console.log('No audio context or sound available, falling back to vibration');
-        this.fallbackToVibration();
-      }
-    } catch (error) {
-      console.error('Error providing audio feedback:', error);
-      this.fallbackToVibration();
+  private async resumeAudioIfNeeded(): Promise<void> {
+    if (this.audioResources?.context.state === 'suspended') {
+      await this.audioResources.context.resume();
     }
   }
 
-  private fallbackToVibration() {
+  private async initializeAudio(): Promise<void> {
+    if (!this.audioResources) {
+      const context = new AudioContext();
+      const buffers = await this.loadSoundBuffers(context);
+      this.audioResources = { context, buffers };
+      this.isAudioInitialized = true;
+    }
+  }
+
+  private async loadSoundBuffers(context: AudioContext): Promise<Map<SoundIntensity, AudioBuffer>> {
+    const buffers = new Map<SoundIntensity, AudioBuffer>();
+    const intensities: SoundIntensity[] = ['light', 'medium', 'heavy'];
+
+    for (const intensity of intensities) {
+      try {
+        const buffer = await this.loadSoundBuffer(context, intensity);
+        buffers.set(intensity, buffer);
+      } catch (error) {
+        console.error(`Failed to load ${intensity} sound:`, error);
+      }
+    }
+
+    return buffers;
+  }
+
+  private async loadSoundBuffer(context: AudioContext, intensity: SoundIntensity): Promise<AudioBuffer> {
+    const response = await fetch(`/assets/sounds/tap-${intensity}.mp3`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return await context.decodeAudioData(arrayBuffer);
+  }
+
+  private async playSound(intensity: SoundIntensity): Promise<void> {
+    if (!this.audioResources) {
+      this.useVibrationFeedback();
+      return;
+    }
+
+    try {
+      await this.resumeAudioIfNeeded();
+      const buffer = this.audioResources.buffers.get(intensity);
+
+      if (!buffer) {
+        throw new Error(`Sound buffer not found for intensity: ${intensity}`);
+      }
+
+      await this.playSoundBuffer(buffer);
+    } catch (error) {
+      console.error('Failed to play sound:', error);
+      this.useVibrationFeedback();
+    }
+  }
+
+  private async playSoundBuffer(buffer: AudioBuffer): Promise<void> {
+    if (!this.audioResources) return;
+
+    const source = this.audioResources.context.createBufferSource();
+    const gainNode = this.audioResources.context.createGain();
+
+    source.buffer = buffer;
+    gainNode.gain.value = FeedbackService.DEFAULT_GAIN_VALUE;
+
+    source.connect(gainNode);
+    gainNode.connect(this.audioResources.context.destination);
+
+    source.start(0);
+  }
+
+  private useVibrationFeedback(): void {
     if ('vibrate' in navigator) {
-      console.log('Using vibration feedback');
-      navigator.vibrate(50);
+      navigator.vibrate(FeedbackService.DEFAULT_VIBRATION_DURATION);
     }
   }
 }

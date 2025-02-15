@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {DatabaseService} from '../../../core/services/database.service';
 import {TicketType} from '../../../models/ticket-type';
 import {PaymentMethod} from '../../../models/payment-method';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {Transaction} from '../../../models/transaction';
 import {FeedbackService} from '../../../core/services/feedback.service';
 import {Platform} from '@angular/cdk/platform';
@@ -15,7 +15,10 @@ interface TicketOption {
   price: number;
   label: string;
 }
-
+interface SalesStats {
+  ticketsSold: number;
+  totalAmount: number;
+}
 @Component({
   selector: 'app-point-of-sale',
   standalone: true,
@@ -24,34 +27,52 @@ interface TicketOption {
   styleUrl: './point-of-sale.component.scss'
 })
 export class PointOfSaleComponent implements OnInit {
+  private static readonly BUTTON_ANIMATION_DURATION = 150;
+  private static readonly SUCCESS_MESSAGE_DURATION = 2000;
+  private salesStatsSubject = new BehaviorSubject<SalesStats>({ ticketsSold: 0, totalAmount: 0 });
+  readonly salesStats$ = this.salesStatsSubject.asObservable();
   isOnline$!: Observable<boolean>;
   pendingCount$!: Observable<number>;
-  showSidebar = false;
-  showSuccess = false;
+  private showSuccessSubject = new BehaviorSubject<boolean>(false);
+  readonly showSuccess$ = this.showSuccessSubject.asObservable();
+  private showSidebarSubject = new BehaviorSubject<boolean>(false);
+  readonly showSidebar$ = this.showSidebarSubject.asObservable();
+
+  readonly isProcessing$ = new BehaviorSubject<boolean>(false);
   processingTicket = false;
   isIOS: boolean;
-  ticketsSold = 0;
-  totalAmount = 0;
 
-  adultTickets: TicketOption[] = [
+
+  readonly systemStatus$ = combineLatest([
+    this.isOnline$,
+    this.pendingCount$
+  ]).pipe(
+    map(([isOnline, pendingCount]) => ({
+      isOnline,
+      pendingCount,
+      needsSync: !isOnline && pendingCount > 0
+    }))
+  );
+
+  readonly adultTickets: TicketOption[] = [
     { type: TicketType.ADULT_DIRECT, price: 2.00, label: 'DIRECT' },
     { type: TicketType.ADULT_ZONAL, price: 2.50, label: 'ZONAL' },
     { type: TicketType.ADULT_INTERZONAL, price: 3.00, label: 'INTERZONAL' }
   ];
 
-  studentTickets: TicketOption[] = [
+  readonly studentTickets: TicketOption[] = [
     { type: TicketType.STUDENT_DIRECT, price: 1.00, label: 'DIRECT' },
     { type: TicketType.STUDENT_ZONAL, price: 1.20, label: 'ZONAL' },
     { type: TicketType.STUDENT_INTERZONAL, price: 1.50, label: 'INTERZONAL' }
   ];
 
   constructor(
-    private authService: AuthService,
-    private db: DatabaseService,
-    private syncService: SyncService,
-    private feedbackService: FeedbackService,
-    private renderer: Renderer2,
-    private platform: Platform
+    private readonly authService: AuthService,
+    private readonly db: DatabaseService,
+    private readonly syncService: SyncService,
+    private readonly feedbackService: FeedbackService,
+    private readonly renderer: Renderer2,
+    private readonly platform: Platform
   ) {
     this.initializeObservables();
     this.isIOS = this.platform.IOS;
@@ -62,11 +83,27 @@ export class PointOfSaleComponent implements OnInit {
     this.pendingCount$ = this.syncService.getPendingCount();
   }
 
+  async ngOnInit(): Promise<void> {
+    await this.initializeSystem();
+  }
 
-
-  async ngOnInit() {
+  private async initializeSystem(): Promise<void> {
     await this.db.initDatabase();
     await this.loadStoredData();
+    this.checkDriverStatus();
+  }
+
+  private async loadStoredData(): Promise<void> {
+    try {
+      const stats = await this.db.getDailyStats();
+      if (stats) {
+        this.salesStatsSubject.next(stats);
+      }
+    } catch (error) {
+      console.error('Error loading stored data:', error);
+    }
+  }
+  private checkDriverStatus(): void {
     const driver = this.authService.getCurrentDriver();
     if (driver) {
       console.log('Logged in driver:', driver);
@@ -74,39 +111,36 @@ export class PointOfSaleComponent implements OnInit {
       console.log('No driver logged in');
     }
   }
-  private async loadStoredData() {
-    try {
-      const stats = await this.db.getDailyStats();
-      if (stats) {
-        this.ticketsSold = stats.ticketsSold;
-        this.totalAmount = stats.totalAmount;
-      }
-    } catch (error) {
-      console.error('Error loading stored data:', error);
-    }
+
+  toggleSidebar(): void {
+    this.showSidebarSubject.next(!this.showSidebarSubject.value);
   }
 
-  toggleSidebar() {
-    this.showSidebar = !this.showSidebar;
-  }
 
-  async handleButtonPress(event: Event, callback: () => Promise<void>) {
+  async handleButtonPress(event: Event, callback: () => Promise<void>): Promise<void> {
     const button = event.currentTarget as HTMLElement;
-    this.renderer.addClass(button, 'button-pressed');
+    this.applyButtonEffect(button);
 
     try {
       await this.feedbackService.provideFeedback();
       await callback();
     } finally {
-      setTimeout(() => {
-        this.renderer.removeClass(button, 'button-pressed');
-      }, 150);
+      this.removeButtonEffect(button);
     }
   }
 
+  private applyButtonEffect(button: HTMLElement): void {
+    this.renderer.addClass(button, 'button-pressed');
+  }
 
-  async processTicket(event: Event, type: TicketType, price: number) {
-    if (this.processingTicket) return;
+  private removeButtonEffect(button: HTMLElement): void {
+    setTimeout(() => {
+      this.renderer.removeClass(button, 'button-pressed');
+    }, PointOfSaleComponent.BUTTON_ANIMATION_DURATION);
+  }
+
+  async processTicket(event: Event, type: TicketType, price: number): Promise<void> {
+    if (this.isProcessing$.value) return;
 
     const driver = this.authService.getCurrentDriver();
     if (!driver) {
@@ -114,46 +148,58 @@ export class PointOfSaleComponent implements OnInit {
       return;
     }
 
+    this.isProcessing$.next(true);
 
-    await this.handleButtonPress(event, async () => {
-      const transaction: Transaction = {
-        ticketType: type,
-        amount: price,
-        timestamp: new Date(),
-        synced: false,
-        paymentMethod: PaymentMethod.CASH,
-        driver: {
-          id: driver.id
-        }
-      };
-
-      this.ticketsSold++;
-      this.totalAmount += price;
-      this.showSuccess = true;
-
-      Promise.all([
-        this.syncService.saveOfflineTransaction(transaction).catch(error => {
-          console.error('Error saving transaction:', error);
-        }),
-
-        navigator.onLine ?
-          this.syncService.syncPendingTransactions().catch(error => {
-            console.error('Error syncing:', error);
-          }) :
-          Promise.resolve(),
-
-        new Promise(resolve => setTimeout(() => {
-          this.showSuccess = false;
-          resolve(true);
-        }, 2000))
-      ]);
+    try {
+      await this.handleButtonPress(event, async () => {
+        const transaction = this.createTransaction(type, price, driver);
+        await this.executeTransaction(transaction);
+      });
+    } finally {
+      this.isProcessing$.next(false);
+    }
+  }
+  private async executeTransaction(transaction: Transaction): Promise<void> {
+    const currentStats = this.salesStatsSubject.value;
+    this.salesStatsSubject.next({
+      ticketsSold: currentStats.ticketsSold + 1,
+      totalAmount: currentStats.totalAmount + transaction.amount
     });
+
+    this.showSuccessSubject.next(true);
+    setTimeout(() => this.showSuccessSubject.next(false), PointOfSaleComponent.SUCCESS_MESSAGE_DURATION);
+
+    await Promise.all([
+      this.syncService.saveOfflineTransaction(transaction),
+      this.syncIfOnline()
+    ]);
   }
 
-  async handleQuickAction(event: Event, action: string) {
+  private createTransaction(type: TicketType, price: number, driver: any): Transaction {
+    return {
+      ticketType: type,
+      amount: price,
+      timestamp: new Date(),
+      synced: false,
+      paymentMethod: PaymentMethod.CASH,
+      driver: {
+        id: driver.id
+      }
+    };
+  }
+  private async syncIfOnline(): Promise<void> {
+    if (!navigator.onLine) return;
+
+    try {
+      await this.syncService.syncPendingTransactions();
+    } catch (error) {
+      console.error('Error syncing:', error);
+    }
+  }
+
+  async handleQuickAction(event: Event, action: string): Promise<void> {
     await this.handleButtonPress(event, async () => {
       await this.feedbackService.provideFeedback();
-
       console.log('Quick action:', action);
     });
   }
