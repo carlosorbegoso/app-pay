@@ -14,12 +14,20 @@ export class TicketGridComponent {
   @Input() title!: string;
   @Input() tickets!: TicketOption[];
   @Input() isProcessing$!: Observable<boolean>;
-  @Input() buttonClass = `ticket-button bg-gradient-to-br from-blue-700 to-blue-800
-    hover:from-blue-600 hover:to-blue-700 rounded-lg text-white
-    shadow-lg active:scale-95 transition-all flex flex-col
-    items-center justify-center min-h-[150px]
+  @Input() buttonClass = `
+    ticket-button
+    bg-gradient-to-b from-blue-600 to-blue-700
+    hover:from-blue-500 hover:to-blue-600
+    active:from-blue-700 active:to-blue-800
+    rounded-lg
+    text-white
+    transition-all duration-150
+    flex flex-col items-center justify-center
+    h-full w-full
     disabled:opacity-50 disabled:cursor-not-allowed
-    relative overflow-hidden`;
+    relative overflow-hidden
+    shadow-lg
+  `;
 
   @Output() onTicketSelected = new EventEmitter<{
     event: Event;

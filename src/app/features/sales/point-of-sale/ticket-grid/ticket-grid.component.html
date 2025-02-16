@@ -1,20 +1,20 @@
-<div class="flex flex-col ">
-  <h2 class="text-white text-lg font-bold px-2 mb-1">{{title}} Tickets</h2>
-  <div class="grid grid-cols-3 gap-2 flex-1"> <!-- Reduced gap from 2 to 1 -->
+<div class="flex flex-col h-full">
+  <h2 class="text-white text-sm font-bold px-1 mb-1">{{title}} Tickets</h2>
+  <div class="grid grid-cols-3 gap-1 flex-1">
     @for (ticket of tickets; track ticket.type) {
       <button
         (touchstart)="onTicketSelected.emit({event: $event, ticket})"
         [disabled]="isProcessing$ | async"
         [class]="buttonClass"
       >
-        <div class="button-flash absolute inset-0 bg-white opacity-0 pointer-events-none"></div>
-        <div class="button-content">
+        <div class="button-flash absolute inset-0 bg-white/20 pointer-events-none"></div>
+        <div class="button-content p-2">
           @if (isProcessing$ | async) {
             <div class="animate-spin text-2xl">⌛</div>
           } @else {
-            <div class="text-lg font-bold">{{ticket.label}}</div>
-            <div class="text-2xl font-bold">S/. {{ticket.price.toFixed(2)}}</div>
-            <div class="text-xs opacity-80">{{title}} Ticket</div>
+            <div class="text-sm font-bold mb-0.5">{{ticket.label}}</div>
+            <div class="text-xl font-bold mb-0.5">S/. {{ticket.price.toFixed(2)}}</div>
+            <div class="text-xs text-white/80">{{title}} Ticket</div>
           }
         </div>
       </button>

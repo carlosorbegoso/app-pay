@@ -32,7 +32,7 @@ interface SystemStatus {
 @Component({
   selector: 'app-point-of-sale',
   standalone: true,
-  imports: [TicketGridComponent, PosHeaderComponent, SidebarActionsComponent, AsyncPipe],
+  imports: [TicketGridComponent, PosHeaderComponent, AsyncPipe],
   templateUrl: './point-of-sale.component.html',
   styleUrl: './point-of-sale.component.scss'
 })
