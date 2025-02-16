@@ -160,13 +160,12 @@ export class PointOfSaleComponent implements OnInit {
       totalAmount: currentStats.totalAmount + transaction.amount
     });
 
-    this.showSuccessSubject.next(true);
-    setTimeout(() => this.showSuccessSubject.next(false), PointOfSaleComponent.SUCCESS_MESSAGE_DURATION);
 
-    await Promise.all([
-      this.syncService.saveOfflineTransaction(transaction),
-      this.syncIfOnline()
-    ]);
+    this.showSuccessSubject.next(true);
+    setTimeout(() => this.showSuccessSubject.next(false),
+      PointOfSaleComponent.SUCCESS_MESSAGE_DURATION);
+
+    await this.syncService.saveOfflineTransaction(transaction);
   }
 
   private createTransaction(type: TicketType, price: number, driver: any): Transaction {
@@ -180,20 +179,4 @@ export class PointOfSaleComponent implements OnInit {
     };
   }
 
-  private async syncIfOnline(): Promise<void> {
-    if (!navigator.onLine) return;
-
-    try {
-      await this.syncService.syncPendingTransactions();
-    } catch (error) {
-      console.error('Error syncing:', error);
-    }
-  }
-
-  async handleQuickAction(event: Event, action: string): Promise<void> {
-    await this.handleButtonPress(event, async () => {
-      await this.feedbackService.provideFeedback();
-      console.log('Quick action:', action);
-    });
-  }
 }
