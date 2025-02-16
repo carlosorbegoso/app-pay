@@ -13,6 +13,7 @@ interface DailyStats {
 })
 export class DatabaseService {
   private db!: IDBPDatabase;
+  private initialized = false;
 
   async initDatabase() {
     this.db = await openDB('pos-db', 3, {
@@ -38,6 +39,12 @@ export class DatabaseService {
     });
 
     await this.checkDailyStats();
+    this.initialized = true;
+  }
+  private async ensureInitialized() {
+    if (!this.initialized) {
+      await this.initDatabase();
+    }
   }
 
   private async checkDailyStats() {
@@ -78,6 +85,7 @@ export class DatabaseService {
   }
 
   async saveTransaction(transaction: Transaction): Promise<void> {
+    await this.ensureInitialized();
     const tx = this.db.transaction(['pending-transactions', 'daily-stats'], 'readwrite');
 
     try {
@@ -102,6 +110,7 @@ export class DatabaseService {
   }
 
   async getDailyStats(): Promise<DailyStats> {
+    await this.ensureInitialized();
     const tx = this.db.transaction('daily-stats', 'readonly');
     const store = tx.objectStore('daily-stats');
     const stats = await store.get('current');
@@ -118,14 +127,12 @@ export class DatabaseService {
   }
 
   async getPendingTransactions(): Promise<Transaction[]> {
+    await this.ensureInitialized();
     return this.db.getAll('pending-transactions');
   }
 
   async clearPendingTransactions(): Promise<void> {
+    await this.ensureInitialized();
     return this.db.clear('pending-transactions');
-  }
-
-  async removePendingTransaction(id: number): Promise<void> {
-    return this.db.delete('pending-transactions', id);
   }
 }

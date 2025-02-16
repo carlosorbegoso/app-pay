@@ -85,6 +85,7 @@ export class SyncService {
     if (this.isSyncing$.value) return;
 
     try {
+      await this.db.initDatabase();
       this.isSyncing$.next(true);
       const transactions = await this.db.getPendingTransactions();
 
@@ -176,21 +177,11 @@ export class SyncService {
     }
   }
 
-  // Getters públicos para estados
   getOnlineStatus() {
     return this.isOnline$.asObservable();
   }
-
-  getSyncingStatus() {
-    return this.isSyncing$.asObservable();
-  }
-
   getPendingCount() {
     return this.pendingCount$.asObservable();
   }
 
-  // Método público para forzar sincronización
-  forceSyncPendingTransactions() {
-    this.requestSync();
-  }
 }
