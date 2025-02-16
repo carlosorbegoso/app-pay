@@ -10,7 +10,7 @@ import {TicketGridComponent} from './ticket-grid/ticket-grid.component';
 import {PosHeaderComponent} from './pos-header/pos-header.component';
 import {TicketType} from '../../../core/models/ticket-type';
 import {Transaction} from '../../../core/models/transaction';
-import {PaymentMethod} from '../../../core/models/payment-method';
+import {TicketService} from './service/ticket.service';
 
 interface TicketOption {
   type: TicketType;
@@ -39,13 +39,13 @@ export class PointOfSaleComponent implements OnInit {
   private static readonly BUTTON_ANIMATION_DURATION = 150;
   private static readonly SUCCESS_MESSAGE_DURATION = 2000;
 
-  private salesStatsSubject = new BehaviorSubject<SalesStats>({ ticketsSold: 0, totalAmount: 0 });
+  private readonly salesStatsSubject = new BehaviorSubject<SalesStats>({ ticketsSold: 0, totalAmount: 0 });
   salesStats$ = this.salesStatsSubject.asObservable();
   isOnline$!: Observable<boolean>;
   pendingCount$!: Observable<number>;
-  private showSuccessSubject = new BehaviorSubject<boolean>(false);
+  private readonly showSuccessSubject = new BehaviorSubject<boolean>(false);
   showSuccess$ = this.showSuccessSubject.asObservable();
-  private showSidebarSubject = new BehaviorSubject<boolean>(false);
+  private readonly showSidebarSubject = new BehaviorSubject<boolean>(false);
   showSidebar$ = this.showSidebarSubject.asObservable();
   isProcessing$ = new BehaviorSubject<boolean>(false);
   isIOS: boolean;
@@ -65,12 +65,13 @@ export class PointOfSaleComponent implements OnInit {
   ];
 
   constructor(
-    private authService: AuthService,
-    private db: DatabaseService,
-    private syncService: SyncService,
-    private feedbackService: FeedbackService,
-    private renderer: Renderer2,
-    private platform: Platform
+    private readonly  authService: AuthService,
+    private readonly db: DatabaseService,
+    private readonly syncService: SyncService,
+    private readonly feedbackService: FeedbackService,
+    private readonly renderer: Renderer2,
+    private  readonly platform: Platform,
+    private readonly ticketService: TicketService,
   ) {
     this.initializeObservables();
     this.isIOS = this.platform.IOS;
@@ -145,7 +146,7 @@ export class PointOfSaleComponent implements OnInit {
 
     try {
       await this.handleButtonPress(event, async () => {
-        const transaction = this.createTransaction(type, price, driver);
+        const transaction = this.ticketService.createTransaction(type, price, driver);
         await this.executeTransaction(transaction);
       });
     } finally {
@@ -168,15 +169,5 @@ export class PointOfSaleComponent implements OnInit {
     await this.syncService.saveOfflineTransaction(transaction);
   }
 
-  private createTransaction(type: TicketType, price: number, driver: any): Transaction {
-    return {
-      ticketType: type,
-      amount: price,
-      timestamp: new Date(),
-      synced: false,
-      paymentMethod: PaymentMethod.CASH,
-      driver: { id: driver.id }
-    };
-  }
 
 }
