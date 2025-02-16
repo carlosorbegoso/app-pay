@@ -4,8 +4,8 @@ import {interval, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 import {DriverBusService} from '../../../../core/services/driven-bus.service';
-import {Bus} from '../../../../models/bus';
-import {Driver} from '../../../../models/driver';
+import {Driver} from '../../../../core/models/driver';
+import {Bus} from '../../../../core/models/bus';
 interface SystemStatus {
   gps: boolean;
   network: boolean;

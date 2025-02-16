@@ -1,4 +1,5 @@
-import {TicketType} from '../../models/ticket-type';
+import {TicketType} from './ticket-type';
+
 
 export  interface TicketOption {
   type: TicketType;

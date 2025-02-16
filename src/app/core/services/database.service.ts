@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Transaction } from '../../models/transaction';
 import { IDBPDatabase, openDB } from 'idb';
+import {Transaction} from '../models/transaction';
 
 interface DailyStats {
   ticketsSold: number;

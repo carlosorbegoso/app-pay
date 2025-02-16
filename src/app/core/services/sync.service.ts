@@ -2,10 +2,11 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, fromEvent, lastValueFrom, merge} from 'rxjs';
 import {DatabaseService} from './database.service';
-import {Transaction} from '../../models/transaction';
 import {environment} from '../../../environments/environment';
 import {AuthService} from './auth.service';
-import {TransactionCreateDto} from '../../models/transaction-create.dto';
+import {TransactionCreateDto} from '../models/transaction-create.dto';
+import {Transaction} from '../models/transaction';
+
 
 
 @Injectable({

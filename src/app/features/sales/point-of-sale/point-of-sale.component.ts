@@ -1,17 +1,16 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
-import {AsyncPipe, CommonModule} from '@angular/common';
-import { DatabaseService } from '../../../core/services/database.service';
-import { TicketType } from '../../../models/ticket-type';
-import { PaymentMethod } from '../../../models/payment-method';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { Transaction } from '../../../models/transaction';
-import { FeedbackService } from '../../../core/services/feedback.service';
-import { Platform } from '@angular/cdk/platform';
-import { SyncService } from '../../../core/services/sync.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { TicketGridComponent } from './ticket-grid/ticket-grid.component';
+import {Component, OnInit, Renderer2} from '@angular/core';
+import {AsyncPipe} from '@angular/common';
+import {DatabaseService} from '../../../core/services/database.service';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {FeedbackService} from '../../../core/services/feedback.service';
+import {Platform} from '@angular/cdk/platform';
+import {SyncService} from '../../../core/services/sync.service';
+import {AuthService} from '../../../core/services/auth.service';
+import {TicketGridComponent} from './ticket-grid/ticket-grid.component';
 import {PosHeaderComponent} from './pos-header/pos-header.component';
-import {SidebarActionsComponent} from './sidebar/sidebar.component';
+import {TicketType} from '../../../core/models/ticket-type';
+import {Transaction} from '../../../core/models/transaction';
+import {PaymentMethod} from '../../../core/models/payment-method';
 
 interface TicketOption {
   type: TicketType;
@@ -75,22 +74,6 @@ export class PointOfSaleComponent implements OnInit {
   ) {
     this.initializeObservables();
     this.isIOS = this.platform.IOS;
-  }
-  handleSidebarAction(action: string) {
-    switch(action) {
-      case 'messages':
-        // Handle messages action
-        break;
-      case 'tickets':
-        // Handle tickets action
-        break;
-      case 'stats':
-        // Handle stats action
-        break;
-      case 'settings':
-        // Handle settings action
-        break;
-    }
   }
   private initializeObservables(): void {
     this.isOnline$ = this.syncService.getOnlineStatus();

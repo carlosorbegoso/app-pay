@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import {Driver} from '../../models/driver';
-import {Bus} from '../../models/bus';
-import {BusStatus} from '../../models/bus-status';
+import {Driver} from '../models/driver';
+import {Bus} from '../models/bus';
+import {BusStatus} from '../models/bus-status';
 
 @Injectable({
   providedIn: 'root'
